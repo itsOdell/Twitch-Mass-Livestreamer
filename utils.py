@@ -3,9 +3,29 @@ import os
 import subprocess
 import time
 from tkinter import filedialog, Tk
-from art import input_style, success_style, light_magenta, reset_style
+from art import input_style, success_style, light_magenta, reset_style, error_style
 
 ALLOWED_TYPES = "*.mp4 *.png *.gif"
+IS_LIVE_CURRENTLY = False
+STOPPED_STREAMING = True
+CONFIGS = {
+    "360": {
+     "resolution": "640x360",
+     "bitrate": "400k -maxrate 400k -bufsize 800k"
+    },
+    "480": {
+     "resolution": "854x480",
+     "bitrate": "2000k -maxrate 2000k -bufsize 4000k"
+    },
+    "720": {
+     "resolution": "1280x720",
+     "bitrate": "4000k -maxrate 4000k -bufsize 8000k"
+    },
+    "1080": {
+     "resolution": "1920x1080",
+     "bitrate": "6000k -maxrate 6000k -bufsize 12000k"
+    }
+}
 
 def resource_path(another_way):
     try:
@@ -24,20 +44,38 @@ def choose_file():
     return file_path
 
 
-def start_streaming(file, stream_key):
-    command = (
-        f'{resource_path("ffmpeg.exe")} -stream_loop -1 -re -i "{file}" '
-        f'-c:v libx264 -preset veryfast -b:v 3000k -maxrate 3000k -bufsize 6000k '
-        f'-pix_fmt yuv420p -g 50 -c:a aac -b:a 160k -ar 44100 '
-        f'-f flv "rtmp://live.twitch.tv/app/{stream_key}"'
-    )
-    subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    print(success_style + "Livestream has started!" + reset_style)
+def start_streaming(file, stream_keys, quality):
+    global IS_LIVE_CURRENTLY, STOPPED_STREAMING
+    STOPPED_STREAMING = False
+    if not STOPPED_STREAMING:   
+        try:
+            command = (
+                f'ffmpeg.exe -stream_loop -1 -re -i "{file}" -map 0:v '
+                f'-s {CONFIGS[quality]["resolution"]} '
+                f'-c:v libx264 -preset veryfast -b:v {CONFIGS[quality]["bitrate"]} '
+                f'-pix_fmt yuv420p -g 50 -c:a aac -b:a 160k -ar 44100 '
+                f'-flags +global_header -f tee "'
+            )
+            for key in stream_keys:
+                command += f'[f=flv:onfail=ignore]rtmp://live.twitch.tv/app/{key}|'
+            command = command[:-1] + '"'
+            IS_LIVE_CURRENTLY = True
+            print(success_style + "Livestream has started!" + reset_style)
+            subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError as e:
+            if not STOPPED_STREAMING and IS_LIVE_CURRENTLY:
+                print(error_style + "Attempting to restart the stream...")
+                return start_streaming(file, stream_keys, quality)
 
-
-def handle_exit():
-    print(light_magenta + "Exiting..." + reset_style)
-    subprocess.run(['taskkill', '/f', '/im', 'ffmpeg.exe'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    print(success_style + "All livestreams have closed. Program exiting in 10 seconds" + reset_style)
-    time.sleep(10)
-    sys.exit(0)
+    
+def stop_streaming():
+    try:
+        global IS_LIVE_CURRENTLY, STOPPED_STREAMING
+        IS_LIVE_CURRENTLY = False
+        STOPPED_STREAMING = True
+        subprocess.run("taskkill /f /im ffmpeg.exe")
+        print(success_style + "Successfully killed streamer!")
+        input(light_magenta + "Press 'Enter' to exit out ")
+        sys.exit(0)
+    except Exception:
+        print(error_style + "There was an error trying to kill the streamer")
