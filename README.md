@@ -4,6 +4,7 @@ Welcome to Twitch Mass Livestreamer, the solution for simultaneously live stream
 
 ## Features
 - **Low CPU & RAM usage:** Optimized for minimal resource consumption.
+- **Very efficent and performant:** Livestream to tens or hundreds of twitch accounts at the same time
 - **Choose Stream Quality:** Ability to select desired streaming quality.
 - **Auto-Restarts on Errors:** Ensures continuous streaming by restarting in case of errors or failures.
 - **Simple to Use:** User-friendly interface for easy operation.
