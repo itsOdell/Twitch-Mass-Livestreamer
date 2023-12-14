@@ -60,7 +60,7 @@ def start_streaming(file, stream_keys, quality):
                 command += f'[f=flv:onfail=ignore]rtmp://live.twitch.tv/app/{key}|'
             command = command[:-1] + '"'
             IS_LIVE_CURRENTLY = True
-            print(success_style + "Livestream has started!" + reset_style)
+            print(success_style + f"{len(stream_keys)} accounts have successfully started streaming!")
             subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except subprocess.CalledProcessError as e:
             if not STOPPED_STREAMING and IS_LIVE_CURRENTLY:
