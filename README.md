@@ -8,6 +8,7 @@ Welcome to Twitch Mass Livestreamer, the solution for simultaneously live stream
 - **Choose Stream Quality:** Ability to select desired streaming quality.
 - **Auto-Restarts on Errors:** Ensures continuous streaming by restarting in case of errors or failures.
 - **Simple to Use:** User-friendly interface for easy operation.
+- **Looping:** Pick one video and it will loop forever!
 
 ## Requirements
 - **Install FFmpeg:** Ensure FFmpeg is installed on your system.
