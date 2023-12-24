@@ -3,7 +3,7 @@ import sys
 import time
 from utils import choose_file, start_streaming, stop_streaming
 from art import LOGO_ART, error_style, reset_style, input_style
-from inquirer import List, prompt
+from inquirer import Text, List, prompt
 
 
 os.system("cls")
@@ -35,11 +35,11 @@ if file_to_stream == "":
     time.sleep(5)
     sys.exit(-1)
 
-questions = [List("quality", message=input_style + "Choose video quality", choices=["360", "480", "720", "1080"])]
+questions = [Text("threads", message=input_style + "How many threads (defaults to 12)"), List("quality", message=input_style + "Choose video quality", choices=["360", "480", "720", "1080"])]
 answers = prompt(questions)
 
 try:
-    start_streaming(file_to_stream, ACCOUNTS, answers["quality"])
+    start_streaming(file_to_stream, ACCOUNTS, threads=answers["threads"], quality=answers["quality"])
 
     # input(light_magenta + f"{len(ACCOUNTS)} accounts have started streaming. Press 'Enter' to exit")
 except KeyboardInterrupt:

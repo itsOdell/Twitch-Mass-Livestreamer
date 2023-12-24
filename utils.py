@@ -44,13 +44,13 @@ def choose_file():
     return file_path
 
 
-def start_streaming(file, stream_keys, quality):
+def start_streaming(file, stream_keys, quality, threads = 12):
     global IS_LIVE_CURRENTLY, STOPPED_STREAMING
     STOPPED_STREAMING = False
     if not STOPPED_STREAMING:   
         try:
             command = (
-                f'{resource_path("ffmpeg.exe")} -stream_loop -1 -re -i "{file}" -map 0:v '
+                f'{resource_path("ffmpeg.exe")} -stream_loop -1 -threads {threads} -re -i "{file}" -map 0:v '
                 f'-s {CONFIGS[quality]["resolution"]} '
                 f'-c:v libx264 -preset veryfast -b:v {CONFIGS[quality]["bitrate"]} '
                 f'-pix_fmt yuv420p -g 50 -c:a aac -b:a 160k -ar 44100 '
@@ -61,6 +61,7 @@ def start_streaming(file, stream_keys, quality):
             command = command[:-1] + '"'
             IS_LIVE_CURRENTLY = True
             print(success_style + f"{len(stream_keys)} accounts have successfully started streaming!")
+            print(light_magenta + "Press 'CTRL + C' to exit")
             subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except subprocess.CalledProcessError as e:
             if not STOPPED_STREAMING and IS_LIVE_CURRENTLY:
