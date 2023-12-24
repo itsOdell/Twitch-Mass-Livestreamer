@@ -5,4 +5,4 @@ venv
 ffmpeg.exe
 Horizons Edge Multi Streamer.exe
 accounts.txt
-pyinstaller_config
+pyinstaller_config.json
