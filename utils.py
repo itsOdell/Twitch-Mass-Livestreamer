@@ -50,7 +50,7 @@ def start_streaming(file, stream_keys, quality):
     if not STOPPED_STREAMING:   
         try:
             command = (
-                f'ffmpeg.exe -stream_loop -1 -re -i "{file}" -map 0:v '
+                f'{resource_path("ffmpeg.exe")} -stream_loop -1 -re -i "{file}" -map 0:v '
                 f'-s {CONFIGS[quality]["resolution"]} '
                 f'-c:v libx264 -preset veryfast -b:v {CONFIGS[quality]["bitrate"]} '
                 f'-pix_fmt yuv420p -g 50 -c:a aac -b:a 160k -ar 44100 '
