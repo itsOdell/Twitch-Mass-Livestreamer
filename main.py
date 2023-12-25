@@ -35,11 +35,13 @@ if file_to_stream == "":
     time.sleep(5)
     sys.exit(-1)
 
-questions = [List("logging", message=input_style + "Do you want logging", choices=["Yes", "No"]), List("quality", message=input_style + "Choose video quality", choices=["360", "480", "720", "1080"])]
+questions = [List("gpu", message=input_style + "Select your GPU", choices=["None", "NVIDIA", "AMD"]),
+            List("logging", message=input_style + "Do you want logging", choices=["Yes", "No"]), 
+                List("quality", message=input_style + "Choose video quality", choices=["360", "480", "720", "1080"])]
 answers = prompt(questions)
 
 try:
-    start_streaming(file_to_stream, ACCOUNTS, logging=answers["logging"], quality=answers["quality"])
+    start_streaming(file_to_stream, ACCOUNTS, logging=answers["logging"], quality=answers["quality"], gpu=answers["gpu"])
 
     # input(light_magenta + f"{len(ACCOUNTS)} accounts have started streaming. Press 'Enter' to exit")
 except KeyboardInterrupt:

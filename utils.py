@@ -27,6 +27,12 @@ CONFIGS = {
     }
 }
 
+CODECS = {
+    "None": "-profile:v baseline -tune zerolatency -c:v libx264 -preset ultrafast ",
+    "NVIDIA": "-profile:v baseline -tune ull -c:v h264_nvenc -preset fast ",
+    "AMD": "-profile:v main -usage ultralowlatency -c:v h264_amf -quality speed ",
+}
+
 def resource_path(another_way):
     try:
         usual_way = sys._MEIPASS
@@ -44,17 +50,18 @@ def choose_file():
     return file_path
 
 
-def start_streaming(file, stream_keys, quality, logging):
+def start_streaming(file, stream_keys, quality, logging, gpu):
     global IS_LIVE_CURRENTLY, STOPPED_STREAMING
     STOPPED_STREAMING = False
     if not STOPPED_STREAMING:   
         try:
             command = (
                 f'{resource_path("ffmpeg.exe")} -stream_loop -1 -re -i "{file}" -map 0:v '
-                f'-s {CONFIGS[quality]["resolution"]} -profile:v baseline -tune zerolatency '
-                f'-c:v libx264 -preset ultrafast -b:v {CONFIGS[quality]["bitrate"]} '
-                f'-pix_fmt yuv420p -g 50 -c:a aac -b:a 128k -ar 44100 '
-                f'-flags +global_header -f tee "'
+                # f'-s {CONFIGS[quality]["resolution"]} '
+                # f'-profile:v baseline -tune zerolatency '
+                f'{CODECS[gpu]} -b:v {CONFIGS[quality]["bitrate"]} '
+                f'-pix_fmt yuv420p -g 50 -c:a aac -atag 10 -b:a 128k -ar 44100 '
+                f'-flags +global_header -vtag 7 -f tee "'
             )
             for key in stream_keys:
                 command += f"[select=\\'v:0,a:0\\':f=flv]rtmp://live.twitch.tv/app/{key}|"
@@ -70,7 +77,7 @@ def start_streaming(file, stream_keys, quality, logging):
         except subprocess.CalledProcessError as e:
             if not STOPPED_STREAMING and IS_LIVE_CURRENTLY:
                 print(error_style + "Attempting to restart the stream...")
-                return start_streaming(file, stream_keys, quality)
+                return start_streaming(file, stream_keys, quality, logging, gpu)
 
     
 def stop_streaming():
