@@ -44,25 +44,29 @@ def choose_file():
     return file_path
 
 
-def start_streaming(file, stream_keys, quality, threads = 12):
+def start_streaming(file, stream_keys, quality, logging):
     global IS_LIVE_CURRENTLY, STOPPED_STREAMING
     STOPPED_STREAMING = False
     if not STOPPED_STREAMING:   
         try:
             command = (
-                f'{resource_path("ffmpeg.exe")} -stream_loop -1 -threads {threads} -re -i "{file}" -map 0:v '
-                f'-s {CONFIGS[quality]["resolution"]} '
-                f'-c:v libx264 -preset veryfast -b:v {CONFIGS[quality]["bitrate"]} '
-                f'-pix_fmt yuv420p -g 50 -c:a aac -b:a 160k -ar 44100 '
+                f'{resource_path("ffmpeg.exe")} -stream_loop -1 -re -i "{file}" -map 0:v '
+                f'-s {CONFIGS[quality]["resolution"]} -profile:v baseline -tune zerolatency '
+                f'-c:v libx264 -preset ultrafast -b:v {CONFIGS[quality]["bitrate"]} '
+                f'-pix_fmt yuv420p -g 50 -c:a aac -b:a 128k -ar 44100 '
                 f'-flags +global_header -f tee "'
             )
             for key in stream_keys:
-                command += f'[f=flv:onfail=ignore]rtmp://live.twitch.tv/app/{key}|'
+                command += f"[select=\\'v:0,a:0\\':f=flv]rtmp://live.twitch.tv/app/{key}|"
             command = command[:-1] + '"'
             IS_LIVE_CURRENTLY = True
             print(success_style + f"{len(stream_keys)} accounts have successfully started streaming!")
             print(light_magenta + "Press 'CTRL + C' to exit")
-            subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if logging == "Yes":
+                subprocess.run(command, check=True)
+            else:
+                subprocess.run(command, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                
         except subprocess.CalledProcessError as e:
             if not STOPPED_STREAMING and IS_LIVE_CURRENTLY:
                 print(error_style + "Attempting to restart the stream...")

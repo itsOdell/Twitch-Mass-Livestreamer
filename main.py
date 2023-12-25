@@ -35,11 +35,11 @@ if file_to_stream == "":
     time.sleep(5)
     sys.exit(-1)
 
-questions = [Text("threads", message=input_style + "How many threads (defaults to 12)"), List("quality", message=input_style + "Choose video quality", choices=["360", "480", "720", "1080"])]
+questions = [List("logging", message=input_style + "Do you want logging", choices=["Yes", "No"]), List("quality", message=input_style + "Choose video quality", choices=["360", "480", "720", "1080"])]
 answers = prompt(questions)
 
 try:
-    start_streaming(file_to_stream, ACCOUNTS, threads=answers["threads"], quality=answers["quality"])
+    start_streaming(file_to_stream, ACCOUNTS, logging=answers["logging"], quality=answers["quality"])
 
     # input(light_magenta + f"{len(ACCOUNTS)} accounts have started streaming. Press 'Enter' to exit")
 except KeyboardInterrupt:
